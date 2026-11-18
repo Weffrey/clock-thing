@@ -13,6 +13,12 @@ class clockThing : public QWidget {
 public:
     enum Mode {StopwatchMode, TimerMode};
 
+    struct ModeState {
+        bool running = false;
+        qint64 banked = 0;
+        QElapsedTimer clock;
+    };
+
     clockThing() {
         setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint);
         setWindowOpacity(0.9);
@@ -38,6 +44,8 @@ public:
         applyMode();
     }
 
+
+
 protected:
     void mousePressEvent(QMouseEvent *e) override {
         if (e->button() == Qt::LeftButton) {
@@ -49,7 +57,6 @@ protected:
             reset();
         } else if (e->button() == Qt::MiddleButton) {
             mode = (mode == StopwatchMode) ? TimerMode : StopwatchMode;
-            reset();
             applyMode();
         }
     }
@@ -69,7 +76,7 @@ protected:
     }
 
     void wheelEvent(QWheelEvent *e) override {
-        if (mode != TimerMode || running) return;
+        if (mode != TimerMode || states[TimerMode].running) return;
         qint64 steps = e->angleDelta().y() / 120; // e is the QWheelEvent that Qt passes in, angleDelta() returns how far the wheel moved
         // .y() is the vertical part, scroll up = (+), scroll down = (-)
         // Qt measures the wheel in eighths of a degree, standard scrolling is 15 degrees, which is 120 units
@@ -85,30 +92,32 @@ protected:
     }
 
 private:
-    qint64 currentMs() const {
-        return banked + (running ? clock.elapsed() : 0);
+    
+    qint64 elapsedMs(const ModeState &s) const {
+        return s.banked + (s.running ? s.clock.elapsed() : 0);
     }
 
-    bool finished() const {
-        return mode == TimerMode && duration > 0 && currentMs() >= duration;
+    bool isDone (Mode m) const {
+        return m == TimerMode && duration > 0 && elapsedMs(states[m]) >= duration;
     }
 
     void toggle() {
-        if (running) {
-            banked += clock.elapsed();
-            running = false;
+        ModeState &s = states[mode];
+        if (s.running) {
+            s.banked += s.clock.elapsed();
+            s.running = false;
         } else {
             if (mode == TimerMode && duration == 0) return;
-            if (finished()) banked = 0; // restarts a timer
-            clock.start();
-            running = true;
+            if (isDone(mode)) s.banked = 0; // restarts a timer
+            s.clock.start();
+            s.running = true;
         }
         refresh();
     }
 
     void reset() {
-        running = false;
-        banked = 0;
+        states[mode].running = false;
+        states[mode].banked = 0;
         refresh();
     }
 
@@ -118,19 +127,20 @@ private:
     }
 
     void refresh() {
-        if (running && finished()) {
-            banked = duration;
-            running = false;
+        ModeState &t = states[TimerMode];
+        if (t.running && isDone(TimerMode)) {
+            t.banked = duration;
+            t.running = false;
             QApplication::beep();
         }
 
-        bool done = finished();
+        bool done = isDone(mode);
         if (done != showingDone) {
             showingDone = done;
             label->setStyleSheet(done ? doneStyle : normalStyle);
         }
 
-        qint64 ms = (mode == TimerMode) ? qMax<qint64>(0, duration - currentMs()) : currentMs();
+        qint64 ms = (mode == TimerMode) ? qMax<qint64>(0, duration - elapsedMs(states[mode])) : elapsedMs(states[mode]);
         label->setText(format(ms));
     }
 
@@ -156,18 +166,17 @@ private:
 
     QLabel *label = nullptr;
     QTimer timer;
-    QElapsedTimer clock;
     Mode mode = StopwatchMode;
 
-    qint64 banked = 0; // ms from earlier runs
     qint64 duration = 10 * 60 * 1000; // timer length, defaults to 10 mins
 
-    bool running = false;
     bool showingDone = false;
     bool dragging = false;
     bool moved = false;
 
     QPoint dragOffset;
+
+    ModeState states[2]; // 0 = stopwatch, 1 = timer
 
     const QString normalStyle = "color: #e6e6e6;";
     const QString doneStyle = "color: #ff5555;";
