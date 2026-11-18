@@ -1,0 +1,3 @@
+/home/jeff/blublublu/floating_stopwatch/build/CMakeFiles/stopwatch.dir
+/home/jeff/blublublu/floating_stopwatch/build/CMakeFiles/edit_cache.dir
+/home/jeff/blublublu/floating_stopwatch/build/CMakeFiles/rebuild_cache.dir
