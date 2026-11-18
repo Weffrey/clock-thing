@@ -371,6 +371,7 @@ CMakeFiles/stopwatch.dir/main.cpp.o: /home/jeff/blublublu/floating_stopwatch/mai
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qvarlengtharray.h \
   /usr/include/x86_64-linux-gnu/qt6/QtCore/qversiontagging.h \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QFont \
+  /usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QMouseEvent \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QTransform \
   /usr/include/x86_64-linux-gnu/qt6/QtGui/QWheelEvent \
@@ -1172,6 +1173,8 @@ CMakeFiles/stopwatch.dir/main.cpp.o: /home/jeff/blublublu/floating_stopwatch/mai
 /usr/include/x86_64-linux-gnu/bits/types/__mbstate_t.h:
 
 /usr/include/ctype.h:
+
+/usr/include/x86_64-linux-gnu/qt6/QtGui/QKeyEvent:
 
 /usr/include/features.h:
 

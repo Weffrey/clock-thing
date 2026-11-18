@@ -79,12 +79,10 @@ protected:
 
     void wheelEvent(QWheelEvent *e) override {
         if (mode != TimerMode || states[TimerMode].running) return;
-        qint64 steps = e->angleDelta().y() / 120; // e is the QWheelEvent that Qt passes in, angleDelta() returns how far the wheel moved
-        // .y() is the vertical part, scroll up = (+), scroll down = (-)
-        // Qt measures the wheel in eighths of a degree, standard scrolling is 15 degrees, which is 120 units
-        // dividing by 120 converts raw movement into whole notches
+        accumulated += e->angleDelta().y(); //Add this event's movement to the total
+        qint64 steps = accumulated / 120; // whole notches accumulated so far
+        accumulated -= steps*120;
         duration = qBound<qint64>(0, duration + steps * 60000, 24LL * 3600 * 1000);
-        // qint is signed integer for Qt
         refresh();
     }
 
@@ -178,6 +176,7 @@ private:
     QLabel *label = nullptr;
     QTimer timer;
     Mode mode = StopwatchMode;
+    int accumulated = 0; // accumulated wheel movement, in eighths of a degree
 
     qint64 duration = 10 * 60 * 1000; // timer length, defaults to 10 mins
 
