@@ -8,6 +8,7 @@
 #include <QWheelEvent>
 #include <QVBoxLayout>
 #include <QWidget>
+#include <QKeyEvent>
 
 class clockThing : public QWidget {
 public:
@@ -22,6 +23,10 @@ public:
     clockThing() {
         setWindowFlags(Qt::Window | Qt::WindowStaysOnTopHint);
         setWindowOpacity(0.9);
+
+        setFocusPolicy(Qt::StrongFocus);
+        setFocus();
+
         setStyleSheet("background-color: #111111;");
         setMinimumSize(160, 60);
 
@@ -55,9 +60,6 @@ protected:
         }
         else if (e->button() == Qt::RightButton) {
             reset();
-        } else if (e->button() == Qt::MiddleButton) {
-            mode = (mode == StopwatchMode) ? TimerMode : StopwatchMode;
-            applyMode();
         }
     }
 
@@ -89,6 +91,15 @@ protected:
     void resizeEvent(QResizeEvent *e) override {
         QWidget::resizeEvent(e);
         updateFont();
+    }
+
+    void keyPressEvent(QKeyEvent *e) override {
+        if(e->key() == Qt::Key_R && !e->isAutoRepeat()) {
+            mode = (mode == StopwatchMode) ? TimerMode : StopwatchMode;
+            applyMode();
+        } else {
+            QWidget::keyPressEvent(e);
+        }
     }
 
 private:
